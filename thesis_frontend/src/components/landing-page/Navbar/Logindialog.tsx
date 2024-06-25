@@ -6,13 +6,23 @@ import AlertMessage from '@/components/AlertMessage/page';
 
 
 const Login = () => {
-  const router = useRouter();
+   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("isload", "0");
+      const session = localStorage.getItem("sessionIsActive");
+      if (session === "1") {
+        router.push('/dashboard');
+      }
+    }
+  }, [router]);
+
   localStorage.setItem("isload", "0");
   const session = localStorage.getItem("sessionIsActive");
 
   const [treatment, setTreatement] = useState(false);
   const [message, setMessage] = useState("");
-  const [styleMessage, setMessageType] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,11 +32,11 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setTreatement(true);
-    setMessageType("text-success mb-3");
+    setMessageType("success");
     setMessage("Traitement...");
 
     if (!username || !password) {
-      setMessageType("alert alert-danger text-dark");
+      setMessageType("error");
       setMessage("Les champs sont obligatoires !!!");
       return;
     }
@@ -65,16 +75,13 @@ const Login = () => {
         setError(`Échec de la connexion : ${errorData.message || response.status}`);
       }
     } catch (error) {
-          setMessageType("alert alert-danger text-dark");
+          setMessageType("error");
           setMessage("Ces identifiants n'existent pas");
     }
   };
 
-  useEffect(() => {
-    if (session === "1") {
-      router.push('/dashboard');
-    }
-  }, [session, router]);
+ 
+
   
 
   return (
@@ -87,15 +94,8 @@ const Login = () => {
                 <div className="mb-12">
                   <h3 className="text-3xl font-extrabold">Connexion </h3>
                 </div>
-                {treatment ? (
-                    <div className={"text-center " + styleMessage}>
-                      {" "}
-                      {message}{" "}
-                    </div>
-                  ) : (
-                    ""
-                  )}
-                  {error && <p>{error}</p>}
+                {message && <AlertMessage type={messageType || 'success'} message={message} />}
+
                 <div>
                   <div className="text-xs block mb-2">Login</div>
                   <div className="relative flex items-center">

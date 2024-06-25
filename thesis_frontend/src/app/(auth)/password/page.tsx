@@ -12,20 +12,21 @@ const Password = () => {
   const [treatment, setTreatment] = useState(false);
   const [message, setMessage] = useState("");
   const [styleMessage, setStyleMessage] = useState("");
- const [messageType, setMessageType] = useState<"success" | "error" | undefined>(undefined); 
+  const [messageType, setMessageType] = useState<"success" | "error" | undefined>(undefined); 
   const [passwordconfirm, setPasswordconfirm] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem("isload", "0");
-      const session = localStorage.getItem("sessionIsActive");
-      if (session === "1") {
-        router.push('/');
-      }
+  
+ useEffect(() => {
+    // Utilisation de l'objet router pour récupérer le token
+    if (router.query && router.query.token) {
+      const { token } = router.query;
+      console.log("Token récupéré :", token);
+    } else {
+      console.log("Aucun token trouvé dans l'URL");
     }
-  }, [router]);
+  }, [router.query]); // Effectue l'effet à chaque fois que router.query change
+
 
   const handlePassword = async (e) => {
     e.preventDefault();
@@ -40,12 +41,12 @@ const Password = () => {
     }
 
     const formData = {
-      passwordconfirm: passwordconfirm,
-      password: password,
+      token: router.query.token, // Utilisation directe de router.query.token ici
+      new_password: password,
     };
 
     try {
-      const response = await fetch("", {
+      const response = await fetch("http://127.0.0.1:8000/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -57,17 +58,11 @@ const Password = () => {
 
       if (response.ok) {
          if (typeof window !== 'undefined') {
-        //   localStorage.setItem("accessToken", responseData.access_token);
-        //   localStorage.setItem("tokenType", responseData.token_type);
-        //   localStorage.setItem(
-        //     "userInfo",
-        //     JSON.stringify(responseData.user_info)
-        //   );
-        //   localStorage.setItem("sessionIsActive", "1");
+        
           router.push("/login");
         }
       } else {
-        // const errorData = await response.json();
+        
       setMessageType("error");
       setMessage(`Échec de l´authentification`);
 
