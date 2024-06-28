@@ -21,7 +21,10 @@ import {
   TableCellsMerge,
   TabletSmartphone,
   User,
+  MemoryStick
 } from 'lucide-react'
+import router from 'next/router'
+
 const handleLogout = () => {
     localStorage.setItem("sessionIsActive", "0");
     localStorage.removeItem('userInfo');
@@ -80,17 +83,23 @@ const links: { group: string; links: SidebarLink[] }[] = [
   },
   {
     group: 'Autres',
+
     links: [
-      // {
-      //   label: 'Chart',
-      //   icon: BarChart2,
-      //   children: [
-      //     {
-      //       label: 'Basic Chart',
-      //       href: '/chart',
-      //     },
-      //   ],
-      // },
+      {
+        label: 'Mémoire',
+        icon: MemoryStick,
+        children: [
+          {
+            label: 'Dépôt',
+            href: '/users/forms/create/memory',
+          },
+          {
+            label: 'Correction',
+            href: '/users/forms/create/memory',
+          },
+        ],
+      },
+
       // {
       //   label: 'Ui Elements',
       //   icon: TabletSmartphone,
@@ -227,7 +236,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       </div>
       {/* <!-- SIDEBAR HEADER --> */}
 
-      <div className='no-scrollbar bg-black flex flex-col overflow-y-auto duration-300 ease-linear'>
+      <div className='no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear'>
         {/* <!-- Sidebar Menu --> */}
         <nav className='mt-5 px-4 py-4 lg:mt-9 lg:px-6'>
           {/* <!-- Menu Group --> */}
@@ -250,10 +259,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           <React.Fragment>
                             <Link
                               href='#'
-                              className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                              className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out  ${
                                 link.children.some((child) =>
                                   pathname.includes(child.href),
-                                ) && 'bg-graydark dark:bg-meta-4'
+                                ) && ''
                               }`}
                               onClick={(e) => {
                                 e.preventDefault()
@@ -304,9 +313,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <li>
                       <Link
                         href={link.href}
-                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        className={`group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out ${
                           pathname.includes(link.href) &&
-                          'bg-graydark dark:bg-meta-4'
+                          ''
                         }`}
                       >
                         <link.icon className='h-4 w-4' />
@@ -323,7 +332,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         {/* <!-- Sidebar Menu --> */}
        
       </div>
-       <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out text-white lg:text-base mt-60">
+       <button className="flex items-center gap-3.5 px-6 py-1 text-sm font-medium duration-300 ease-in-out text-white lg:text-base mt-50">
           <svg
             className="fill-current"
             width="22"

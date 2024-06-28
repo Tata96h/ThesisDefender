@@ -1,5 +1,3 @@
-//"use client"
-
 import DefaultLayout from '@/components/Layouts/DefaultLayout'
 
 import { Enseignant } from "@/types/user";
@@ -28,25 +26,25 @@ export default async function ListeEnseignant({ searchParams }: paramsProps) {
   //const country = searchParams.search || null;
   const offset = (page - 1) * pageLimit;
 
-  const etuList = await fetch(
+  const enseignantListe = await fetch(
     ` http://127.0.0.1:8000/enseignants/?offset=${offset}&limit=${pageLimit}`,  {cache: "no-store"}
   );
   // console.log(etuList);
   
   // const res = await fetch(
-  //   `https://api.slingacademy.com/v1/sample-data/users?offset=${offset}&limit=${pageLimit}` +
-  //     (country ? `&search=${country}` : ""),
+  //   https://api.slingacademy.com/v1/sample-data/users?offset=${offset}&limit=${pageLimit} +
+  //     (country ? &search=${country} : ""),
   // );
   
-  const enseignantRes = await etuList.json();
-  const totalUsers = 20 //etudiantRes.total_users; //1000
+  const enseignantRes = await enseignantListe.json();
+  const totalUsers = enseignantRes.total_users; 
   const pageCount = Math.ceil(totalUsers / pageLimit);
-  const enseignant = enseignantRes;
+  const enseignant = enseignantRes.enseignants;
 
  return (
  <DefaultLayout>
-    {/* <div> {`Etudiants (${JSON.stringify(etuList.json())})`}  </div> */}
-   <div className="flex flex-col gap-9">
+    {/* <div> {Etudiants (${JSON.stringify(etuList.json())})}  </div> */}
+   <div className="flex flex-col gap-9 mt-20">
         <div className="flex items-start justify-between">
           <Heading
             title={`Enseignants (${totalUsers})`}
@@ -76,4 +74,3 @@ export default async function ListeEnseignant({ searchParams }: paramsProps) {
 
  )
 };
-

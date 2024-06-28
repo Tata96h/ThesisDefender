@@ -1,148 +1,276 @@
-"use client";
+"use client"
 
-import { useState } from 'react';
-import Head from 'next/head';
+import { useState, useRef } from "react"
+import Image from 'next/image'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Navbar from '@/components/landing-page/Navbar/index';
+import Footer from '@/components/landing-page/Footer/Footer';
 
-export default function StudentSpace() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [file, setFile] = useState(null);
-  const [theme, setTheme] = useState('');
+export default function StudentDashboard() {
   const [profile, setProfile] = useState({
-    name: 'Jean Dupont',
-    email: 'jean.dupont@email.com',
-    avatar: 'https://via.placeholder.com/150',
-  });
+    firstName: "John",
+    lastName: "Doe",
+    email: "john.doe@example.com",
+    studentId: "12345",
+    profilePicture: null
+  })
 
-  const handleFileChange = (e) => setFile(e.target.files[0]);
-  const handleThemeChange = (e) => setTheme(e.target.value);
+  const [thesis, setThesis] = useState({
+    title: "",
+    file: null,
+  })
+
+  const [internship, setInternship] = useState({
+    company: "",
+    address: "",
+    supervisor: "",
+    startDate: "",
+    endDate: "",
+  })
+
+  const fileInputRef = useRef(null)
+
   const handleProfileChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
-  };
+    setProfile({ ...profile, [e.target.name]: e.target.value })
+  }
 
-  const NavBar = () => (
-    <nav className="bg-gradient-to-r from-purple-500 to-indigo-600 p-4 text-white">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">EspacEtudiant</h1>
-        <div className="flex space-x-4">
-          {['Dashboard', 'Mémoire', 'Thème', 'Profil'].map((item) => (
-            <button
-              key={item}
-              onClick={() => setActiveTab(item.toLowerCase())}
-              className={`px-3 py-2 rounded-full transition-colors duration-300 ${
-                activeTab === item.toLowerCase()
-                  ? 'bg-white text-purple-600'
-                  : 'hover:bg-purple-400'
-              }`}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-      </div>
-    </nav>
-  );
+  const handleProfilePictureChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfile({ ...profile, profilePicture: reader.result })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
-  const Footer = () => (
-    <footer className="bg-gray-800 text-white p-4 mt-8">
-      <div className="container mx-auto text-center">
-        <p>&copy; 2024 EspacEtudiant. Tous droits réservés.</p>
-      </div>
-    </footer>
-  );
+  const handleThesisChange = (e) => {
+    if (e.target.name === "file") {
+      setThesis({ ...thesis, file: e.target.files[0] })
+    } else {
+      setThesis({ ...thesis, [e.target.name]: e.target.value })
+    }
+  }
 
-  const Dashboard = () => (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4">Bienvenue, {profile.name}!</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-blue-100 p-4 rounded-lg">
-          <h3 className="font-bold text-lg mb-2">Statut du mémoire</h3>
-          <p>En attente de dépôt</p>
-        </div>
-        <div className="bg-green-100 p-4 rounded-lg">
-          <h3 className="font-bold text-lg mb-2">Statut du thème</h3>
-          <p>Non soumis</p>
-        </div>
-      </div>
-    </div>
-  );
+  const handleInternshipChange = (e) => {
+    setInternship({ ...internship, [e.target.name]: e.target.value })
+  }
 
-  const Profile = () => (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4">Profil</h2>
-      <div className="flex items-center mb-4">
-        <img src={profile.avatar} alt="Avatar" className="w-24 h-24 rounded-full mr-4" />
-        <div>
-          <input
-            type="text"
-            name="name"
-            value={profile.name}
-            onChange={handleProfileChange}
-            className="block w-full p-2 mb-2 border rounded"
-          />
-          <input
-            type="email"
-            name="email"
-            value={profile.email}
-            onChange={handleProfileChange}
-            className="block w-full p-2 border rounded"
-          />
-        </div>
-      </div>
-      <button className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">
-        Sauvegarder les modifications
-      </button>
-    </div>
-  );
+  const handleProfileSubmit = (e) => {
+    e.preventDefault()
+    console.log("Profile updated:", profile)
+    // Implement API call to update profile
+  }
 
-  const UploadThesis = () => (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4">Déposer le mémoire</h2>
-      <div className="mb-4">
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-        />
-      </div>
-      <button className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">
-        Envoyer le mémoire
-      </button>
-    </div>
-  );
+  const handleThesisSubmit = (e) => {
+    e.preventDefault()
+    console.log("Thesis submitted:", thesis)
+    // Implement API call to submit thesis
+  }
 
-  const SubmitTheme = () => (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-4">Soumettre le thème</h2>
-      <textarea
-        value={theme}
-        onChange={handleThemeChange}
-        className="w-full p-2 mb-4 border rounded"
-        rows="4"
-        placeholder="Entrez votre thème ici..."
-      ></textarea>
-      <button className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded">
-        Soumettre le thème
-      </button>
-    </div>
-  );
+  const handleInternshipSubmit = (e) => {
+    e.preventDefault()
+    console.log("Internship info submitted:", internship)
+    // Implement API call to submit internship info
+  }
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click()
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <Head>
-        <title>EspacEtudiant</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
 
-      <NavBar />
+    <div className="flex-1 space-y-4 p-8 pt-6">
 
-      <main className="flex-grow container mx-auto p-4">
-        {activeTab === 'dashboard' && <Dashboard />}
-        {activeTab === 'mémoire' && <UploadThesis />}
-        {activeTab === 'thème' && <SubmitTheme />}
-        {activeTab === 'profil' && <Profile />}
-      </main>
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+      </div>
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="profile">Profil</TabsTrigger>
+          <TabsTrigger value="thesis">Dépôt de Mémoire</TabsTrigger>
+          <TabsTrigger value="internship">Stage</TabsTrigger>
+        </TabsList>
+        <TabsContent value="profile" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Profil</CardTitle>
+              <CardDescription>
+                Gérez vos informations personnelles ici.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={profile.profilePicture} alt="Profile picture" />
+                    <AvatarFallback>{profile.firstName[0]}{profile.lastName[0]}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <Button type="button" onClick={triggerFileInput}>
+                      Changer la photo
+                    </Button>
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleProfilePictureChange}
+                    />
+                  </div>
+                </div>
 
-      <Footer />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label htmlFor="firstName">Prénom</Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={profile.firstName}
+                      onChange={handleProfileChange}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="lastName">Nom</Label>
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={profile.lastName}
+                      onChange={handleProfileChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={profile.email}
+                    onChange={handleProfileChange}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="studentId">Numéro étudiant</Label>
+                  <Input
+                    id="studentId"
+                    name="studentId"
+                    value={profile.studentId}
+                    onChange={handleProfileChange}
+                  />
+                </div>
+
+                <Button type="submit">Mettre à jour le profil</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="thesis" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Dépôt de Mémoire</CardTitle>
+              <CardDescription>
+                Déposez votre mémoire ici.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <form onSubmit={handleThesisSubmit}>
+                <div className="space-y-1">
+                  <Label htmlFor="title">Titre du mémoire</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    value={thesis.title}
+                    onChange={handleThesisChange}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="file">Fichier du mémoire</Label>
+                  <Input
+                    id="file"
+                    name="file"
+                    type="file"
+                    onChange={handleThesisChange}
+                  />
+                </div>
+                <Button type="submit" className="mt-4">Déposer</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="internship" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informations de Stage</CardTitle>
+              <CardDescription>
+                Fournissez les détails de votre stage.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <form onSubmit={handleInternshipSubmit}>
+                <div className="space-y-1">
+                  <Label htmlFor="company">Entreprise</Label>
+                  <Input
+                    id="company"
+                    name="company"
+                    value={internship.company}
+                    onChange={handleInternshipChange}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="address">Adresse</Label>
+                  <Textarea
+                    id="address"
+                    name="address"
+                    value={internship.address}
+                    onChange={handleInternshipChange}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="supervisor">Superviseur</Label>
+                  <Input
+                    id="supervisor"
+                    name="supervisor"
+                    value={internship.supervisor}
+                    onChange={handleInternshipChange}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="startDate">Date de début</Label>
+                  <Input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    value={internship.startDate}
+                    onChange={handleInternshipChange}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="endDate">Date de fin</Label>
+                  <Input
+                    id="endDate"
+                    name="endDate"
+                    type="date"
+                    value={internship.endDate}
+                    onChange={handleInternshipChange}
+                  />
+                </div>
+                <Button type="submit" className="mt-4">Enregistrer</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
     </div>
-  );
+  )
 }

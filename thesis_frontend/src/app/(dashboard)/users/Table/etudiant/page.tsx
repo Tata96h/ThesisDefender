@@ -41,8 +41,8 @@ export default async function ListeEtudiant({ searchParams }: paramsProps) {
     }
 
     const etudiantRes = await response.json();
-    etudiant = etudiantRes;
-    totalUsers = 20; // Remplacez par etudiantRes.total_users si disponible
+    etudiant = etudiantRes.etudiants;
+    totalUsers = etudiantRes.total_users; // Remplacez par etudiantRes.total_users si disponible
   } catch (error) {
     console.error("Erreur lors de la récupération des étudiants:", error);
     // Gérer l'erreur de manière appropriée (par exemple, afficher un message à l'utilisateur)
@@ -52,7 +52,7 @@ export default async function ListeEtudiant({ searchParams }: paramsProps) {
 
   return (
     <DefaultLayout>
-      <div className="flex flex-col gap-9">
+      <div className="flex flex-col gap-9 mt-20">
         <div className="flex items-start justify-between">
           <Heading
             title={`Etudiants (${totalUsers})`}

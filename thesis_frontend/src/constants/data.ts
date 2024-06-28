@@ -4,6 +4,7 @@
 
 
 export type Etudian = {
+  matricule: any;
   id: number;
   username: string;
   nom: string;
@@ -15,6 +16,7 @@ export type Etudian = {
   bio: string;
 };
 export type Enseignan = {
+  matricule: any;
   id: number;
   username: string;
   nom: string;

@@ -1,27 +1,23 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { Field, Label, Switch } from "@headlessui/react";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
+import AlertMessage from "@/components/AlertMessage/page";
+
 
 const AddEnseignant = () => {
   const [error, setError] = useState("");
-  const [newPassconfirmValue, setNewPassconfirmValue] = useState("");
-  // const [filiereOptions, setFiliereOptions] = useState([]);
   const [gradeOptions, setGradeOptions] = useState([]);
   const [departementOptions, setDepartementOptions] = useState([]);
+  const [messageType, setMessageType] = useState<"success" | "error" | undefined>(undefined);
+  const [message, setMessage] = useState("");
+  
 
   const [formData, setFormData] = useState({
     nom: "",
     prenoms: "",
     matricule: "",
-    // filiere_id: "",
-    email: "",
     grade_id: "",
-    specialite: "",
-    annee_id: "",
     username: "",
-    password: "",
     departement_id: "",
   });
 
@@ -55,15 +51,7 @@ const AddEnseignant = () => {
     console.log(newMatriculeValue);
   };
 
-  const handleSpecialiteChange = (event) => {
-    const newSpecialiteValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      specialite: newSpecialiteValue,
-    }));
-    console.log(newSpecialiteValue);
-  };
+  
   const handleGradeChange = (event) => {
     const newGradeValue = event.target.value;
 
@@ -74,41 +62,7 @@ const AddEnseignant = () => {
     console.log(newGradeValue);
   };
 
-  const handleAnneeChange = (event) => {
-    const newAnneeValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      annee_id: newAnneeValue,
-    }));
-    console.log(newAnneeValue);
-  };
-
-  const handleEmailChange = (event) => {
-    const newEmailValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      username: newEmailValue,
-    }));
-    console.log(newEmailValue);
-  };
-
-  const handlePasswordChange = (event) => {
-    const newPasswordValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      password: newPasswordValue,
-    }));
-    console.log(newPasswordValue);
-  };
-
-  const handlePassconfirmChange = (event) => {
-    const newPassconfirmValue = event.target.value;
-    setNewPassconfirmValue(newPassconfirmValue);
-    console.log(newPassconfirmValue);
-  };
+  
   const handleUsernameChange = (event) => {
     const newUsernameValue = event.target.value;
 
@@ -127,19 +81,9 @@ const AddEnseignant = () => {
     }));
     console.log(newDepartementValue);
   };
- const handleBioChange = (event) => {
-    const newBioValue = event.target.value;
 
-    setFormData((prevState) => ({
-      ...prevState,
-      bio: newBioValue,
-    }));
-    console.log(newBioValue);
-  };
   useEffect(() => {
    
- 
-    
     const fetchGradeOptions = async () => {
       try {
         const response = await fetch(
@@ -147,12 +91,8 @@ const AddEnseignant = () => {
         );
         if (response.ok) {
           const grades = await response.json();
-          setGradeOptions(
-            grades.map((grade) => ({
-              value: grade.id,
-              label: grade.nom,
-            }))
-          );
+          setGradeOptions(grades.map((grade) => ({ value: grade.id, label: grade.nom })))
+          
         } else {
           console.error(
             "Erreur lors de la récupération des grades :",
@@ -172,12 +112,8 @@ const AddEnseignant = () => {
         );
         if (response.ok) {
           const departements = await response.json();
-          setDepartementOptions(
-            departements.map((departement) => ({
-              value: departement.id,
-              label: departement.nom,
-            }))
-          );
+          setDepartementOptions(departements.map((departement) => ({ value: departement.id, label: departement.nom })));
+ 
         } else {
           console.error(
             "Erreur lors de la récupération des départements :",
@@ -192,17 +128,21 @@ const AddEnseignant = () => {
     fetchDepartementOptions();
   }, []);
 
-  const handleSubmit = async (e) => {
+ 
+   
+const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    const passconfirm = newPassconfirmValue;
-    const password = formData.password;
-    console.log(passconfirm);
-    console.log(password);
+    const { nom, prenoms, matricule, grade_id, departement_id, username } = formData;
+    if (!nom || !prenoms || !matricule || !grade_id || !departement_id || !username) {
+      setMessageType("error");
+      setMessage("Tous les champs sont obligatoires !!");
+      return;
+    }
 
-    // Vérifier que le mot de passe et la confirmation sont identiques
-    if (password !== passconfirm) {
-      setError("Les mots de passe doivent être identiques !!!");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(username)) {
+      setMessageType("error");
+      setMessage("Email invalide !!");
       return;
     }
 
@@ -229,143 +169,97 @@ const AddEnseignant = () => {
     }
   };
 
-  return (
-    <DefaultLayout>
-      <div className="flex flex-col gap-9">
-        <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
-          <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
-            <h3 className="font-medium text-black dark:text-white">
-              Ajouter un enseignant
-            </h3>
-          </div>
-          <form onSubmit={handleSubmit}>
-            <div className="p-6.5">
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Nom{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez votre nom"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="text"
-                    onChange={handleNomChange}
-                  />
-                </div>
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Prénom
-                  </label>
-                  <input
-                    placeholder="Entrez votre prénom"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="text"
-                    onChange={handlePrenomChange}
-                  />
-                </div>
+ return (
+  <DefaultLayout>
+    <div className="flex justify-center pt-20"> 
+      <div className="w-full max-w-4xl px-4"> 
+        <div className="flex flex-col gap-9">
+          <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+           
+            <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark mb-3">
+              <h3 className="font-medium text-blue-500 dark:text-white ">
+                Ajouter un enseignant
+              </h3>
+              <div className="mt-5">
+
+             {message && <AlertMessage type={messageType || 'success'} message={message} />}
               </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Matricule <span className="text-meta-1">*</span>
-                  </label>
-                  <input
-                    placeholder="Entrez votre matricule"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="number"
-                    onChange={handleMatriculeChange}
-                  />
-                </div>
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Spécialité
-                  </label>
+
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="p-6.5">
+                <div className="mb-4.5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="w-full">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Nom
+                    </label>
                     <input
-                    placeholder="Entrez votre spécialité"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="text-area"
-                    onChange={handleSpecialiteChange}
-                  />
-                </div>
-               
-              </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Année académique{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez votre année"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="number"
-                    onChange={handleAnneeChange}
-                  />
-                </div>
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Email{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez un mail"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="email"
-                    onChange={handleEmailChange}
-                  />
-                </div>
-              </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Mot de passe{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez votre mot de passe"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="password"
-                    onChange={handlePasswordChange}
-                  />
-                </div>
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Mot de passe confirmé
-                  </label>
-                  <input
-                    placeholder="Confirmez votre mot de passe"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="password"
-                    onChange={handlePassconfirmChange}
-                  />
-                </div>
+                      placeholder="Entrez votre nom"
+                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      type="text"
+                        onChange={handleNomChange}
 
-              </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-
-               <div className="w-full xl:w-1/2">
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Département{" "}
-                  </label>
-                  <div className="relative z-20 bg-transparent dark:bg-form-input">
-                    <select
-                      className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary "
-                      onChange={handleDepartementChange}
-                    >
-                      <option value="">Selectionnez un département </option>
-                      {departementOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Prénom
+                    </label>
+                    <input
+                      placeholder="Entrez votre prénom"
+                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      type="text"
+                      onChange={handlePrenomChange}
+                    />
+                  </div>
+                </div>
+                <div className="mb-4.5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="w-full">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Matricule <span className="text-meta-1"></span>
+                    </label>
+                    <input
+                      placeholder="Entrez votre matricule"
+                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      type="number"
+                      onChange={handleMatriculeChange}
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Email
+                    </label>
+                    <input
+                      placeholder="Entrez votre mail"
+                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      type="email"
+                      onChange={handleUsernameChange}
+                    />
+                  </div>
+                </div>
+                <div className="mb-4.5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="w-full">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Département
+                    </label>
+                    <div className="relative z-20 bg-transparent dark:bg-form-input">
+                      <select
+                        className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                        onChange={handleDepartementChange}
+                      >
+                        <option    
+>Selectionnez un département</option>
+                        {departementOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     <span className="absolute right-4 top-1/2 z-30 -translate-y-1/2">
                       <svg
                         className="fill-current"
-                        width={24}
-                        height={24}
+                        width="24"
+                        height="24"
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -379,30 +273,30 @@ const AddEnseignant = () => {
                           />
                         </g>
                       </svg>
-                    </span>
+                    </span> 
                   </div>
-                </div> 
-               <div className="w-full xl:w-1/2">
-                  <label className="mb-2.5 block text-black dark:text-white">
-                    Grade{" "}
-                  </label>
-                  <div className="relative z-20 bg-transparent dark:bg-form-input">
-                    <select
-                      className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary "
-                      onChange={handleGradeChange}
-                    >
-                      <option value="">Selectionnez un grade </option>
-                      {gradeOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                  </div>
+                  <div className="w-full">
+                    <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                      Grade
+                    </label>
+                    <div className="relative z-20 bg-transparent dark:bg-form-input">
+                      <select
+                        className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+                        onChange={handleGradeChange}
+                      >
+                        <option value="">Selectionnez un grade</option>
+                        {gradeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     <span className="absolute right-4 top-1/2 z-30 -translate-y-1/2">
                       <svg
                         className="fill-current"
-                        width={24}
-                        height={24}
+                        width="24"
+                        height="24"
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
@@ -416,49 +310,25 @@ const AddEnseignant = () => {
                           />
                         </g>
                       </svg>
-                    </span>
+                    </span> 
                   </div>
-                </div> 
-         
+                  </div>
                 </div>
-                <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-
-                 <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-Biographie                  </label>
-                  <textarea
-  className="w-full h-48 p-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 ease-in-out"
-  placeholder="Entrez une biographie..."
-   onChange={handleBioChange}
-
->
-
-</textarea>
-
-                 </div>
-                 <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Username
-                  </label>
-                  <input
-                    placeholder="Entrez votre nom d'utilisateur"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="text"
-                    onChange={handleUsernameChange}
-                  />
-                 </div>
+                <div className="flex justify-center mt-6">
+                  <button
+                    className="w-1/2 justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-80"
+                    id="sub"
+                  >
+                    Envoyer
+                  </button>
                 </div>
-              <button
-                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
-                id="sub"
-              >
-                Envoyez
-              </button>
-            </div>
-          </form>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </DefaultLayout>
-  );
+    </div>
+  </DefaultLayout>
+);
 };
 export default AddEnseignant;

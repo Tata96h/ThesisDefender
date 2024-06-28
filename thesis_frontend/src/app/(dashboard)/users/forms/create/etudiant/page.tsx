@@ -1,28 +1,24 @@
 "use client"
 import { useState, useRef, useEffect } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { Field, Label, Switch } from "@headlessui/react";
 import DefaultLayout from "@/components/Layouts/DefaultLayout";
 import { useRouter } from 'next/navigation';
+import AlertMessage from "@/components/AlertMessage/page";
 
 const AddEtudiant = () => {
   const router = useRouter()
 
   const [error, setError] = useState("");
-  const [newPassconfirmValue, setNewPassconfirmValue] = useState("");
   const [filiereOptions, setFiliereOptions] = useState([]);
-
+  const [messageType, setMessageType] = useState<"success" | "error" | undefined>(undefined);
+  const [message, setMessage] = useState("");
   const [formData, setFormData] = useState({
     nom: "",
     prenoms: "",
     matricule: "",
     filiere_id: "",
     email: "",
-    bio: "",
     annee_id: "",
     username: "",
-    password: "",
-    departement_id: "",
   });
 
   const handleNomChange = (event) => {
@@ -64,53 +60,8 @@ const AddEtudiant = () => {
     }));
     console.log(newFiliereValue);
   };
- 
 
-  const handleBioChange = (event) => {
-    const newBioValue = event.target.value;
 
-    setFormData((prevState) => ({
-      ...prevState,
-      bio: newBioValue,
-    }));
-    console.log(newBioValue);
-  };
-
-  const handleAnneeChange = (event) => {
-    const newAnneeValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      annee_id: newAnneeValue,
-    }));
-    console.log(newAnneeValue);
-  };
-
-  const handleEmailChange = (event) => {
-    const newEmailValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      email: newEmailValue,
-    }));
-    console.log(newEmailValue);
-  };
-
-  const handlePasswordChange = (event) => {
-    const newPasswordValue = event.target.value;
-
-    setFormData((prevState) => ({
-      ...prevState,
-      password: newPasswordValue,
-    }));
-    console.log(newPasswordValue);
-  };
-
-  const handlePassconfirmChange = (event) => {
-    const newPassconfirmValue = event.target.value;
-    setNewPassconfirmValue(newPassconfirmValue);
-    console.log(newPassconfirmValue);
-  };
   const handleUsernameChange = (event) => {
     const newUsernameValue = event.target.value;
 
@@ -120,20 +71,14 @@ const AddEtudiant = () => {
     }));
     console.log(newUsernameValue);
   };
- const handleDepartementChange = (event) => {
-    const newDepartementValue = event.target.value;
 
-    setFormData((prevState) => ({
-      ...prevState,
-      departement: newDepartementValue,
-    }));
-    console.log(newDepartementValue);
-  };
+ 
+ 
   useEffect(() => {
      const fetchFiliereOptions = async () => {
       try {
         const response = await fetch(
-          "http://127.0.0.1:8000/etudiants/get_filieres/"
+          "http://localhost:8000/etudiants/get_filieres/?limit=20&offset=0"
         );
         if (response.ok) {
           const filieres = await response.json();
@@ -157,17 +102,19 @@ const AddEtudiant = () => {
   
   }, []);
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
-    const passconfirm = newPassconfirmValue;
-    const password = formData.password;
-    console.log(passconfirm);
-    console.log(password);
+    const { nom, prenoms, matricule, filiere_id, username } = formData;
+    if (!nom || !prenoms || !matricule || !filiere_id || !username) {
+      setMessageType("error");
+      setMessage("Tous les champs sont obligatoires !!");
+      return;
+    }
 
-    // Vérifier que le mot de passe et la confirmation sont identiques
-    if (password !== passconfirm) {
-      setError("Les mots de passe doivent être identiques !!!");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(username)) {
+      setMessageType("error");
+      setMessage("Email invalide !!");
       return;
     }
 
@@ -176,16 +123,14 @@ const AddEtudiant = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-        cache: "no-store"
       });
       const responseData = await response.json();
       console.log(responseData);
       console.log(formData);
 
       if (response.ok) {
-        alert("Enregistrement effectué avec succès!");
-        router.push("/users/Table/etudiant");
-        router.refresh()
+        alert("Enregistrement effectué avec succès !!!");
+        // router.push("/dashboard");
       } else {
         setError(`Échec de la connexion : ${response.statusText}`);
       }
@@ -195,20 +140,23 @@ const AddEtudiant = () => {
       );
     }
   };
+  
 
   return (
     <DefaultLayout>
-      <div className="flex flex-col gap-9">
+      <div className="flex justify-center gap-9 pt-20">
+       <div className="w-full max-w-4xl px-4"> 
+
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              <span className="block sm:inline">{error}</span>
-            </div>
-          )}
+         
           <div className="border-b border-stroke px-6.5 py-4 dark:border-strokedark">
             <h3 className="font-medium text-blue-500 dark:text-white">
               Ajouter un étudiant
             </h3>
+             <div className="mt-5">
+
+             {message && <AlertMessage type={messageType || 'success'} message={message} />}
+              </div>
           </div>
           <form onSubmit={handleSubmit}>
             <div className="p-6.5">
@@ -221,6 +169,7 @@ const AddEtudiant = () => {
                     placeholder="Entrez votre nom"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     type="text"
+                    value={formData.nom}
                     onChange={handleNomChange}
                   />
                 </div>
@@ -232,6 +181,7 @@ const AddEtudiant = () => {
                     placeholder="Entrez votre prénom"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     type="text"
+                    value={formData.prenoms}
                     onChange={handlePrenomChange}
                   />
                 </div>
@@ -245,16 +195,37 @@ const AddEtudiant = () => {
                     placeholder="Entrez votre matricule"
                     className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     type="number"
+                    value={formData.matricule}
                     onChange={handleMatriculeChange}
                   />
                 </div>
                 <div className="w-full xl:w-1/2">
+                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
+                    Email
+                  </label>
+                  <input
+                    placeholder="Entrez votre mail"
+                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                    type="email"
+                    value={formData.username}
+
+                    onChange={handleUsernameChange}
+                  />
+                </div>
+               
+               
+              </div>
+              
+              
+              <div className="mb-4.5 gap-6">
+              <div className="">
                   <label className="mb-2.5 block text-black dark:text-white">
                     Filière{" "}
                   </label>
                   <div className="relative z-20 bg-transparent dark:bg-form-input">
                     <select
                       className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary "
+                      value={formData.filiere_id}
                       onChange={handleFiliereChange}
                     >
                       <option value="">Sélectionnez une filière</option>
@@ -285,94 +256,20 @@ const AddEtudiant = () => {
                     </span>
                   </div>
                 </div>
-               
-              </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Année académique{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez votre année"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="number"
-                    onChange={handleAnneeChange}
-                  />
+                 
                 </div>
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Email{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez un mail"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="email"
-                    onChange={handleEmailChange}
-                  />
+              <div className="flex justify-center mt-6">
+                  <button
+                    className="w-1/2 justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-80"
+                    id="sub"
+                  >
+                    Envoyer
+                  </button>
                 </div>
-              </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Mot de passe{" "}
-                  </label>
-                  <input
-                    placeholder="Entrez votre mot de passe"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="password"
-                    onChange={handlePasswordChange}
-                  />
-                </div>
-                <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Mot de passe confirmé
-                  </label>
-                  <input
-                    placeholder="Confirmez votre mot de passe"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="password"
-                    onChange={handlePassconfirmChange}
-                  />
-                </div>
-
-              </div>
-              <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-
-               
-             <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-Biographie                  </label>
-                  <textarea
-  className="w-full h-48 p-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 ease-in-out"
-  placeholder="Entrez une biographie..."
-   onChange={handleBioChange}
-
->
-
-</textarea>
-
-                 </div>
-                 <div className="w-full xl:w-1/2">
-                  <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    Username
-                  </label>
-                  <input
-                    placeholder="Entrez votre nom d'utilisateur"
-                    className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
-                    type="text"
-                    onChange={handleUsernameChange}
-                  />
-                </div>
-                </div>
-              <button
-                className="flex w-full justify-center rounded bg-primary p-3 font-medium text-gray hover:bg-opacity-90"
-                id="sub"
-              >
-                Envoyez
-              </button>
             </div>
           </form>
         </div>
+      </div>
       </div>
     </DefaultLayout>
   );

@@ -2,31 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import '../../(landing-page)/landingpage-style.css';
 import AlertMessage from '@/components/AlertMessage/page';
 
 
+
 const Password = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [treatment, setTreatment] = useState(false);
   const [message, setMessage] = useState("");
-  const [styleMessage, setStyleMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | undefined>(undefined); 
+  const [messageType, setMessageType] = useState<"success" | "error" | undefined>(undefined);
   const [passwordconfirm, setPasswordconfirm] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  
- useEffect(() => {
-    // Utilisation de l'objet router pour récupérer le token
-    if (router.query && router.query.token) {
-      const { token } = router.query;
-      console.log("Token récupéré :", token);
+  const [token, setToken] = useState("");
+
+  useEffect(() => {
+    const urlToken = searchParams.get('token');
+    if (urlToken) {
+      setToken(urlToken);
+      console.log("Token récupéré :", urlToken);
     } else {
       console.log("Aucun token trouvé dans l'URL");
     }
-  }, [router.query]); // Effectue l'effet à chaque fois que router.query change
-
+  }, [searchParams]);
 
   const handlePassword = async (e) => {
     e.preventDefault();
@@ -35,16 +35,23 @@ const Password = () => {
     setMessage("Traitement...");
 
     if (!passwordconfirm || !password) {
-    setMessageType("error");
+      setMessageType("error");
       setMessage("Tous les champs sont obligatoires !!");
       return;
     }
 
+    if (password !== passwordconfirm) {
+      setMessageType("error");
+      setMessage("Les mots de passe ne correspondent pas !");
+      return;
+    }
+  
     const formData = {
-      token: router.query.token, // Utilisation directe de router.query.token ici
+      token: token,
       new_password: password,
     };
-
+    console.log(formData);
+    
     try {
       const response = await fetch("http://127.0.0.1:8000/auth/reset-password", {
         method: "POST",
@@ -57,20 +64,16 @@ const Password = () => {
       console.log(responseData);
 
       if (response.ok) {
-         if (typeof window !== 'undefined') {
-        
-          router.push("/login");
-        }
+        router.push("/login");
       } else {
-        
-      setMessageType("error");
-      setMessage(`Échec de l´authentification`);
-
-        // setError(`Échec de la connexion : ${errorData.message || response.status}`);
+        setMessageType("error");
+        setMessage(`Échec de l'authentification : ${responseData.message || 'Erreur inconnue'}`);
       }
     } catch (error) {
       setMessageType("error");
-      setMessage("Ces identifiants n'existent pas");
+      setMessage("Une erreur est survenue lors de l'authentification'");
+    } finally {
+      setTreatment(false);
     }
   };
 
@@ -80,20 +83,15 @@ const Password = () => {
         <div className="grid md:grid-cols-2 items-center gap-4 max-w-6xl w-full p-4 m-4 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)] rounded-md">
           <div className="md:max-w-md w-full sm:px-6 py-4">
             <form onSubmit={handlePassword}>
-              <div className="mb-12">
+              <div className="mb-7">
                 <h3 className="text-3xl font-extrabold">Authentification </h3>
               </div>
-               {message && <AlertMessage type={messageType || 'success'} message={message} />}
+               
+               <div className="mt-2">
+                {message && <AlertMessage type={messageType || 'success'} message={message} />}
 
-              {/* {treatment ? (
-                <div className={"text-center " + messageType}>
-                  {" "}
-                  {message}{" "}
                 </div>
-              ) : (
-                ""
-              )}
-              {error && <p>{error}</p>} */}
+             
               
               <div className="mt-8">
                 <label className="text-xs block mb-2">Mot de passe</label>
@@ -153,7 +151,7 @@ const Password = () => {
           </div>
           <div className="md:h-full w-full max-md:mt-10 bg-white rounded-xl lg:p-12 p-8">
             <Image
-              src="/images/login/imgLogin.png"
+              src="/images/Login/imgLogin.png"
               alt="nothing"
               width={1000}
               height={1}

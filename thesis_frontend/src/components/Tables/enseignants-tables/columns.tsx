@@ -26,16 +26,13 @@ export const columns: ColumnDef<Enseignan>[] = [
   },
   {
     accessorKey: "utilisateur.nom",
-    header: "Nom",
+    header: "hh",
   },
   {
     accessorKey: "utilisateur.prenoms",
     header: "Prénoms",
   },
-  {
-    accessorKey: "utilisateur.email",
-    header: "Email",
-  },
+  
   // {
   //   accessorKey: "filiere.nom",
   //   header: "Filière",
